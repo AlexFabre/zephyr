@@ -54,14 +54,11 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #error DTCM for DMA buffer is activated but zephyr,dtcm is not present in dts
 #endif
 
-#define PHY_ADDR	CONFIG_ETH_STM32_HAL_PHY_ADDRESS
+#define PHY_ADDR	DT_REG_ADDR(DT_NODELABEL(hal_ethernet_phy))
 
 #if defined(CONFIG_MDIO)
 
-#define DEVICE_PHY_BY_NAME(n) \
-	    DEVICE_DT_GET(DT_CHILD(DT_INST_CHILD(n, mdio), __CONCAT(ethernet_phy_, PHY_ADDR)))
-
-static const struct device *eth_stm32_phy_dev = DEVICE_PHY_BY_NAME(0);
+static const struct device *eth_stm32_phy_dev = DEVICE_DT_GET(DT_NODELABEL(hal_ethernet_phy));
 
 #endif
 
