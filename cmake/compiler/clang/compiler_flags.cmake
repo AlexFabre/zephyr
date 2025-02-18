@@ -16,8 +16,10 @@ check_set_compiler_property(PROPERTY hosted)
 
 # clang flags for coverage generation
 if (CONFIG_COVERAGE_NATIVE_SOURCE)
+  # Use clang’s 'source-based' code coverage feature.
   set_compiler_property(PROPERTY coverage -fprofile-instr-generate -fcoverage-mapping)
 else()
+  # Use GCC-compatible coverage implementation
   set_compiler_property(PROPERTY coverage --coverage -fno-inline)
 endif()
 
