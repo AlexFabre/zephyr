@@ -1,7 +1,11 @@
 # The coverage linker flag is specific for clang.
 if (CONFIG_COVERAGE_NATIVE_GCOV)
+  # GCC-compatible coverage implementation.
   set_linker_property(PROPERTY coverage --coverage)
 elseif(CONFIG_COVERAGE_NATIVE_SOURCE)
+  # clang’s source-based code coverage implementation. 
+  # It’s called “source-based” because it operates on AST and preprocessor 
+  # information directly. This allows it to generate very precise coverage data.
   set_linker_property(PROPERTY coverage -fprofile-instr-generate -fcoverage-mapping)
 endif()
 
