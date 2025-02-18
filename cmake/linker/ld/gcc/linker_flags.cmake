@@ -4,7 +4,7 @@
 # linker flags themselves are not depending on actual configurations.
 # All flags should be described, and the caller should know the flag name to use.
 if (NOT CONFIG_COVERAGE_GCOV)
-  set_property(TARGET linker PROPERTY coverage -lgcov)
+  set_linker_property(PROPERTY coverage -lgcov)
 endif()
 
 check_set_linker_property(TARGET linker APPEND PROPERTY gprof -pg)
@@ -14,6 +14,6 @@ check_set_linker_property(TARGET linker APPEND PROPERTY gprof -pg)
 add_link_options(-gdwarf-4)
 
 # Extra warnings options for twister run
-set_property(TARGET linker PROPERTY warnings_as_errors -Wl,--fatal-warnings)
+set_linker_property(PROPERTY warnings_as_errors -Wl,--fatal-warnings)
 
 set_linker_property(PROPERTY specs -specs=)
