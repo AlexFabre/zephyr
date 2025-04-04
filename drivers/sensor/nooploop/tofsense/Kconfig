@@ -6,6 +6,5 @@ config TOFSENSE
 	default y
 	depends on DT_HAS_NOOPLOOP_TOFSENSE_ENABLED
 	depends on UART_INTERRUPT_DRIVEN
-	select UART_USE_RUNTIME_CONFIGURE
 	help
 	  Enable driver for the Nooploop TOFSense time of flight sensor.
