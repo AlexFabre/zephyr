@@ -678,9 +678,30 @@ void z_log_vprintk(const char *fmt, va_list ap);
 }
 #define LOG_IN_CPLUSPLUS 1
 #endif
-/* Macro expects that optionally on second argument local log level is provided.
- * If provided it is returned, otherwise default log level is returned or
- * LOG_LEVEL, if it was locally defined.
+/**
+ * @brief Resolve the desired module logging level.
+ *
+ * This macro determines the desired logging level by evaluating the 
+ * provided arguments and predefined configurations. It checks if a specific 
+ * log level is given as an argument; otherwise, it defaults to a predefined 
+ * `CONFIG_LOG_DEFAULT_LEVEL` or `LOG_LEVEL` if locally defined.
+ *
+ * - If `CONFIG_LOG` is not defined, the macro resolves to `LOG_LEVEL_NONE`.
+ * - If `CONFIG_LOG` is defined:
+ *   - Checks if a local `LOG_LEVEL` is specified.
+ *   - Uses the second argument as the log level if provided.
+ *   - Defaults to either `LOG_LEVEL` or `CONFIG_LOG_DEFAULT_LEVEL` if no 
+ *     second argument is provided, depending on whether `LOG_LEVEL` is set 
+ *     to zero or not.
+ * 
+ * @note  This macro does not check the value of `CONFIG_LOG_OVERRIDE_LEVEL`.
+ * If `CONFIG_LOG_OVERRIDE_LEVEL` happens to be higher than what is resolved,
+ * the definitive level is set into `LOG_MODULE_REGISTER(...)`
+ *
+ * @param ... Variadic arguments where the second argument can optionally be 
+ *            a local log level.
+ *
+ * @return The resolved log level based on the evaluation of conditions.
  */
 #if !defined(CONFIG_LOG)
 #define _LOG_LEVEL_RESOLVE(...) LOG_LEVEL_NONE
@@ -764,7 +785,8 @@ extern struct k_mem_partition k_log_partition;
  *
  * @note The module's state is defined, and the module is registered,
  *       only if LOG_LEVEL for the current source file is non-zero or
- *       it is not defined and CONFIG_LOG_DEFAULT_LEVEL is non-zero.
+ *       it is not defined and CONFIG_LOG_DEFAULT_LEVEL or 
+ * 	     CONFIG_LOG_OVERRIDE_LEVEL is non-zero.
  *       In other cases, this macro has no effect.
  * @see LOG_MODULE_DECLARE
  */
@@ -772,7 +794,7 @@ extern struct k_mem_partition k_log_partition;
 	COND_CODE_1(							\
 		Z_DO_LOG_MODULE_REGISTER(__VA_ARGS__),			\
 		(_LOG_MODULE_DATA_CREATE(GET_ARG_N(1, __VA_ARGS__),	\
-				      _LOG_LEVEL_RESOLVE(__VA_ARGS__))),\
+				      MAX(_LOG_LEVEL_RESOLVE(__VA_ARGS__), CONFIG_LOG_OVERRIDE_LEVEL))),\
 		() \
 	)                                                                       \
 	LOG_MODULE_DECLARE(__VA_ARGS__)
