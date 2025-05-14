@@ -1,0 +1,28 @@
+# Daly BMS configuration options
+
+# Copyright (c) 2025 Alex Fabre
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig DALY_BMS
+	bool "Daly BMS"
+	default y
+	depends on DT_HAS_DALY_BMS_ENABLED
+	help
+	  Enable UART/CAN-based driver for a Daly BMS.
+
+if DALY_BMS
+
+config DALY_BMS_BUS_UART
+	bool "Daly BMS UART driver"
+	default y
+	depends on $(dt_compat_on_bus,$(DT_COMPAT_DALY_BMS),uart)
+	depends on UART_INTERRUPT_DRIVEN
+	select UART
+
+config DALY_BMS_BUS_CAN
+	bool "Daly BMS CAN driver"
+	default y
+	depends on $(dt_compat_any_has_prop,$(DT_COMPAT_DALY_BMS),can-bus)
+	select CAN
+
+endif # DALY_BMS
