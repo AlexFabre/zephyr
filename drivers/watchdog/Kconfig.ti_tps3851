@@ -1,0 +1,12 @@
+# Copyright (c) 2025 Alex Fabre
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config WDT_TI_TPS3851
+	bool "External TI TPS3851 Watchdog (WDT) Driver"
+	default y
+	depends on DT_HAS_TI_TPS3851_ENABLED
+	depends on GPIO
+	help
+	  Enable WDT driver for TI TPS3851. This is an external IC and requires
+	  three GPIO connections from the processor.
