@@ -729,6 +729,8 @@ if(EXISTS ${APPLICATION_SOURCE_DIR}/VERSION)
   set_property(TARGET app_version_h PROPERTY APP_VERSION_CUSTOMIZATION ${APP_VERSION_CUSTOMIZATION})
 endif()
 
+add_definitions(-DZEPHYR_APP_NAME=CMAKE_PROJECT_NAME)
+
 # Unfortunately, the order in which CMakeLists.txt code is processed
 # matters so we need to be careful about how we order the processing
 # of subdirectories. One example is "Compiler flags added late in the

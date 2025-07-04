@@ -8,7 +8,7 @@
 
 int main(void)
 {
-	printf("Hello World! %s\n", CONFIG_BOARD_TARGET);
+	printf("Hello World! %s\n", ZEPHYR_APP_NAME);
 
 	return 0;
 }
