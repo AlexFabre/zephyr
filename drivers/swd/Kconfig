@@ -1,0 +1,25 @@
+# SWD configuration options
+
+# Copyright (c) 2025 Alex Fabre
+# SPDX-License-Identifier: Apache-2.0
+
+#
+# SWD options
+#
+menuconfig SWD
+	bool "Serial Wire Debug (SWD) bus drivers"
+	help
+	  Enable SWD Driver Configuration
+
+if SWD
+
+config SWD_SHELL
+	bool "SWD Shell"
+	depends on SHELL
+	help
+	  Enable SWD Shell.
+
+	  The SWD shell supports scanning, SWD read and write
+	  operations.
+
+endif # SWD
