@@ -226,7 +226,7 @@ static int phy_mc_t1s_get_link(const struct device *dev, struct phy_link_state *
 
 	if (memcmp(&old_state, state, sizeof(struct phy_link_state)) != 0) {
 		if (state->is_up) {
-			LOG_INF("PHY (%d) Link speed 10 Mbps, half duplex\n", cfg->phy_addr);
+			LOG_INF("PHY (%d) Link speed 10 Mbps, half duplex", cfg->phy_addr);
 		}
 	}
 

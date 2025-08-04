@@ -231,7 +231,7 @@ result:
 	if (memcmp(&old_state, state, sizeof(struct phy_link_state)) != 0) {
 		LOG_DBG("PHY %d is %s", config->addr, state->is_up ? "up" : "down");
 		if (state->is_up) {
-			LOG_INF("PHY (%d) Link speed %s Mb, %s duplex\n", config->addr,
+			LOG_INF("PHY (%d) Link speed %s Mb, %s duplex", config->addr,
 				(PHY_LINK_IS_SPEED_100M(state->speed) ? "100" : "10"),
 				PHY_LINK_IS_FULL_DUPLEX(state->speed) ? "full" : "half");
 		}

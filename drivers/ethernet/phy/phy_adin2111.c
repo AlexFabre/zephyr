@@ -400,7 +400,7 @@ static int update_link_state(const struct device *dev)
 
 		invoke_link_cb(dev);
 
-		LOG_INF("PHY (%d) Link speed %s Mb, %s duplex\n", config->phy_addr,
+		LOG_INF("PHY (%d) Link speed %s Mb, %s duplex", config->phy_addr,
 			(PHY_LINK_IS_SPEED_100M(data->state.speed) ? "100" : "10"),
 			PHY_LINK_IS_FULL_DUPLEX(data->state.speed) ? "full" : "half");
 	}

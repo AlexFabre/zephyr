@@ -204,7 +204,7 @@ result:
 	if (memcmp(&old_state, state, sizeof(struct phy_link_state)) != 0) {
 		LOG_DBG("PHY %d is %s", config->addr, state->is_up ? "up" : "down");
 		if (state->is_up) {
-			LOG_DBG("PHY (%d) Link speed %s Mb, %s duplex\n", config->addr,
+			LOG_DBG("PHY (%d) Link speed %s Mb, %s duplex", config->addr,
 				(PHY_LINK_IS_SPEED_100M(state->speed) ? "100" : "10"),
 				PHY_LINK_IS_FULL_DUPLEX(state->speed) ? "full" : "half");
 		}
@@ -390,7 +390,7 @@ static int phy_mc_ksz8081_cfg_link(const struct device *dev, enum phy_link_speed
 	/* Log the results of the configuration */
 	LOG_INF("PHY %d is %s", config->addr, data->state.is_up ? "up" : "down");
 	if (data->state.is_up) {
-		LOG_INF("PHY (%d) Link speed %s Mb, %s duplex\n", config->addr,
+		LOG_INF("PHY (%d) Link speed %s Mb, %s duplex", config->addr,
 			(PHY_LINK_IS_SPEED_100M(data->state.speed) ? "100" : "10"),
 			PHY_LINK_IS_FULL_DUPLEX(data->state.speed) ? "full" : "half");
 	}
