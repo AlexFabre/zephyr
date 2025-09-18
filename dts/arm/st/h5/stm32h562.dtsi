@@ -529,6 +529,13 @@
 			clocks = <&rcc STM32_CLOCK(AHB4, 16)>;
 			status = "disabled";
 		};
+
+		cordic: cordic@40023800 {
+			compatible = "st,stm32-cordic";
+			reg = <0x40023800 0x400>;
+			clocks = <&rcc STM32_CLOCK(AHB1, 14)>;
+			status = "disabled";
+		};
 	};
 
 	smbus3: smbus3 {

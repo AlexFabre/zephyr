@@ -1,0 +1,12 @@
+# STM32 CORDIC Accelerator configuration options
+
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.frm>
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig CORDIC_STM32
+	bool "STM32 CORDIC Accelerator driver"
+	default y
+	depends on DT_HAS_ST_STM32_CORDIC_ENABLED
+	help
+	  Enable STM32 LL-based CORDIC Accelerator driver.
+

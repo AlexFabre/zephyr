@@ -1,0 +1,34 @@
+# CORDIC configuration options
+
+# Copyright (c) 2025 Alex Fabre
+# SPDX-License-Identifier: Apache-2.0
+
+#
+# CORDIC options
+#
+menuconfig CORDIC
+	bool "CORDIC drivers"
+
+if CORDIC
+
+config CORDIC_INIT_PRIORITY
+	int "CORDIC devices init priority"
+	default 90
+	help
+	  CORDIC devices initialization priority.
+
+config CORDIC_SIN_COS
+	bool "Enable sine and cosine operations"
+	default n
+
+config CORDIC_PHASE_MODULUS
+	bool "Enable phase and modulus operations"
+	default n
+
+module = CORDIC
+module-str = CORDIC
+source "subsys/logging/Kconfig.template.log_config"
+
+source "drivers/CORDIC/Kconfig.stm32"
+
+endif # CORDIC
