@@ -15,9 +15,10 @@
 
 /* Use can select/deselect to compute only one of sin or cos, or both */
 #define COMPUTE_COSINUS 1
-#define COMPUTE_SINUS 1
+#define COMPUTE_SINUS 0
 
-#define USE_MATH_H 1
+#define USE_STD_DOUBLE 1
+#define USE_STD_FLOAT 1
 #define USE_CMSIS_FAST_MATH 1
 #define USE_CORDIC 1
 
@@ -32,7 +33,7 @@
 #define Q31_TO_FLOAT(input)		(((float) (input)) / ((float) Q31_FACTOR))
 #endif /* USE_CORDIC */
 
-static void print_result(const char header[10], float angle_rad, float cosOutput, float sinOutput, uint32_t elapsed) {
+static void print_result(const char header[11], float angle_rad, float cosOutput, float sinOutput, uint32_t elapsed) {
 	printf("%s: ", header);
 		#if COMPUTE_COSINUS
 		printf("cos(%.2f) = %.4f\t", angle_rad, cosOutput);
@@ -47,6 +48,17 @@ int main(void)
 {
 	printf("Hello World! %s\n", CONFIG_BOARD_TARGET);
 
+	#if COMPUTE_COSINUS && COMPUTE_SINUS
+	printf("Computing cos(x) and sin(x)\n");
+	#else
+	#if COMPUTE_COSINUS
+	printf("Computing cos(x)\n");
+	#endif
+	#if COMPUTE_SINUS
+	printf("Computing sin(x)\n");
+	#endif
+	#endif
+
 	for (size_t i = 0; i < 32; i++)
 	{
 		uint32_t start;
@@ -55,11 +67,13 @@ int main(void)
 		float sinOutput = 0;
 
 		float angle_rad = 0.0 + (i*0.1);
+
+		printf("------ angle (rad) = %f ------\n", angle_rad);
 		
 		/* -------------------------------------- */
-		/* Math.h */
+		/* Math.h double */
 		/* -------------------------------------- */
-		#if USE_MATH_H
+		#if USE_STD_DOUBLE
 		start = k_cycle_get_32();
 
 		#if COMPUTE_COSINUS
@@ -73,8 +87,28 @@ int main(void)
 		elapsed = k_cycle_get_32() - start;
 		/* -------------------------------------- */
 
-		print_result("math.h   ", angle_rad, cosOutput, sinOutput, elapsed);
-		#endif /* USE_MATH_H */
+		print_result("std double", angle_rad, cosOutput, sinOutput, elapsed);
+		#endif /* USE_STD_DOUBLE */
+
+		/* -------------------------------------- */
+		/* Math.h float */
+		/* -------------------------------------- */
+		#if USE_STD_FLOAT
+		start = k_cycle_get_32();
+
+		#if COMPUTE_COSINUS
+		cosOutput = cosf(angle_rad);
+		#endif
+		#if COMPUTE_SINUS
+		sinOutput = sinf(angle_rad);
+		#endif
+
+		/* Calculate number of cycles elapsed */
+		elapsed = k_cycle_get_32() - start;
+		/* -------------------------------------- */
+
+		print_result("std float ", angle_rad, cosOutput, sinOutput, elapsed);
+		#endif /* USE_STD_FLOAT */
 
 		/* -------------------------------------- */
 		/* ARM CMSIS DSP */
@@ -93,14 +127,14 @@ int main(void)
 		elapsed = k_cycle_get_32() - start;
 		/* -------------------------------------- */
 
-		print_result("cmsis DSP", angle_rad, cosOutput, sinOutput, elapsed);
+		print_result("cmsis DSP ", angle_rad, cosOutput, sinOutput, elapsed);
 		#endif /* USE_CMSIS_FAST_MATH */
 		
 		/* -------------------------------------- */
 		/* CORDIC */
 		/* -------------------------------------- */
 		#if USE_CORDIC
-		start = k_cycle_get_32();
+		
 
 		/* Configure the CORDIC engine */
 
@@ -120,6 +154,8 @@ int main(void)
 		 * must be in the range -1 to +1. Input angle_rads in radians must be multiplied
 		 * by 1/π. */
 
+		 start = k_cycle_get_32();
+
 		/* Write angle_rad */
 		LL_CORDIC_WriteData(CORDIC, FLOAT_TO_Q31(angle_rad / PI));
 		/* Read cosine */
@@ -131,7 +167,7 @@ int main(void)
 		elapsed = k_cycle_get_32() - start;
 		/* -------------------------------------- */
 
-		print_result("CORDIC   ", angle_rad, cosOutput, sinOutput, elapsed);
+		print_result("CORDIC    ", angle_rad, cosOutput, sinOutput, elapsed);
 
 		#endif /* USE_CORDIC */
 	}
