@@ -90,5 +90,6 @@ source "drivers/pinctrl/Kconfig.wch_00x_afio"
 source "drivers/pinctrl/Kconfig.sf32lb52x"
 
 rsource "renesas/Kconfig"
+rsource "holtek/Kconfig"
 
 endif # PINCTRL

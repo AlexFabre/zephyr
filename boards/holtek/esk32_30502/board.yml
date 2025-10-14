@@ -1,0 +1,6 @@
+board:
+  name: esk32_30502
+  full_name: ESK32-30502 Starter Kit
+  vendor: holtek
+  socs:
+    - name: ht32f52341

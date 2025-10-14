@@ -1,0 +1,13 @@
+/*
+ * Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <holtek/ht32/f5/ht32f5.dtsi>
+
+/ {
+	soc {
+		compatible = "holtek,ht32f523", "simple-bus";
+	};
+};

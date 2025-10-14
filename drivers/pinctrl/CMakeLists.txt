@@ -60,6 +60,7 @@ zephyr_library_sources_ifdef(CONFIG_PINCTRL_WCH_00X_AFIO pinctrl_wch_00x_afio.c)
 zephyr_library_sources_ifdef(CONFIG_PINCTRL_SF32LB52X pinctrl_sf32lb52x.c)
 
 add_subdirectory(renesas)
+add_subdirectory_ifdef(CONFIG_PINCTRL_HT32 holtek)
 
 if (CONFIG_PINCTRL_BFLB)
   zephyr_library_sources(pinctrl_bflb.c)

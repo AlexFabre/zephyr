@@ -130,6 +130,8 @@ zephyr_library_sources_ifdef(CONFIG_GPIO_XMC4XXX    gpio_xmc4xxx.c)
 zephyr_library_sources_ifdef(CONFIG_LPGPIO_ESP32    gpio_esp32_lp.c)
 # zephyr-keep-sorted-stop
 
+add_subdirectory_ifdef(CONFIG_GPIO_HT32 holtek)
+
 # zephyr-keep-sorted-start
 zephyr_library_sources_ifdef(CONFIG_GPIO_HOGS       gpio_hogs.c)
 zephyr_library_sources_ifdef(CONFIG_GPIO_SHELL      gpio_shell.c)

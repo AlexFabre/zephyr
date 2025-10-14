@@ -1,0 +1,11 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+config UART_HT32
+	bool "Holtek HT32 UART/USART driver"
+	default y
+	depends on DT_HAS_HOLTEK_HT32_UART_ENABLED || DT_HAS_HOLTEK_HT32_USART_ENABLED
+	select SERIAL_HAS_DRIVER
+	select SERIAL_SUPPORT_INTERRUPT
+	help
+	  Enable UART/USART driver for Holtek HT32 MCUs.

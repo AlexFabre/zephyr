@@ -1,0 +1,9 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+config GPIO_HT32
+	bool "Holtek HT32 GPIO driver"
+	default y
+	depends on DT_HAS_HOLTEK_HT32_GPIO_ENABLED
+	help
+	  Enable GPIO driver for Holtek HT32 MCUs.

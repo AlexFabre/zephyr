@@ -1,0 +1,86 @@
+/*
+ * Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <holtek/ht32/f5/ht32f523X1.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "Holtek ESK32-30502 Starter Kit";
+	compatible = "holtek,esk32-30502";
+
+	chosen {
+		zephyr,console = &usart0;
+		zephyr,shell-uart = &usart0;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_1 {
+			gpios = <&gpiob 4 GPIO_ACTIVE_HIGH>;
+			label = "User LED1";
+		};
+		led2: led_2 {
+			gpios = <&gpioa 14 GPIO_ACTIVE_HIGH>;
+			label = "User LED2";
+		};
+		led3: led_3 {
+			gpios = <&gpioa 15 GPIO_ACTIVE_HIGH>;
+			label = "User LED3";
+		};
+	};
+
+	aliases {
+		led0 = &led1;
+		led1 = &led2;
+		led2 = &led3;
+	};
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Reserve 64 bytes for bootloader at the start */
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 DT_SIZE_K(8)>;
+		};
+
+		/* Application partition */
+		slot0_partition: partition@2000 {
+			label = "image-0";
+			reg = <0x00002000 DT_SIZE_K(28)>;
+		};
+
+		/* Backup partition for updates */
+		slot1_partition: partition@9000 {
+			label = "image-1";
+			reg = <0x00009000 DT_SIZE_K(28)>;
+		};
+	};
+};
+
+&gpioa {
+	status = "okay";
+};
+
+&gpiob {
+	status = "okay";
+};
+
+&gpioc {
+	status = "okay";
+};
+
+&usart0 {
+	status = "okay";
+	current-speed = <115200>;
+};

@@ -1,0 +1,15 @@
+identifier: esk32_30502
+name: ESK32-30502
+type: mcu
+arch: arm
+ram: 8
+flash: 64
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+  - uart
+testing:
+  default: true

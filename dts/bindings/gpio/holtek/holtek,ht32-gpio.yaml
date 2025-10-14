@@ -1,0 +1,19 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+description: Holtek HT32 GPIO controller
+
+compatible: "holtek,ht32-gpio"
+
+include: [gpio-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  "#gpio-cells":
+    const: 2
+
+gpio-cells:
+  - pin
+  - flags

@@ -1,0 +1,9 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+config CLOCK_CONTROL_HT32
+	bool "Holtek HT32 clock control driver"
+	default y
+	depends on DT_HAS_HOLTEK_HT32_CKCU_ENABLED
+	help
+	  Enable clock control driver for Holtek HT32 MCUs.

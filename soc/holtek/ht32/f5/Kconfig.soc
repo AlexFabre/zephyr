@@ -1,0 +1,36 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_HT32F5XXXX
+	bool
+	select SOC_FAMILY_HOLTEK_HT32
+	select ARM
+	select CPU_CORTEX_M0PLUS
+	select CPU_CORTEX_M_HAS_SYSTICK
+	help
+	  Enable support for HT32F5xxxx series
+
+config SOC_SERIES
+	default "ht32f5xxxx" if SOC_SERIES_HT32F5XXXX
+
+config SOC_HT32F52331
+	bool
+	select SOC_SERIES_HT32F5XXXX
+
+config SOC_HT32F52341
+	bool
+	select SOC_SERIES_HT32F5XXXX
+
+config SOC_HT32F52342
+	bool
+	select SOC_SERIES_HT32F5XXXX
+
+config SOC_HT32F52352
+	bool
+	select SOC_SERIES_HT32F5XXXX
+
+config SOC
+	default "ht32f52331" if SOC_HT32F52331
+	default "ht32f52341" if SOC_HT32F52341
+	default "ht32f52342" if SOC_HT32F52342
+	default "ht32f52352" if SOC_HT32F52352

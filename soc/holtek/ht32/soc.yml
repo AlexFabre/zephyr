@@ -1,0 +1,9 @@
+family:
+- name: ht32
+  series:
+  - name: f5
+    socs:
+    - name: ht32f52331
+    - name: ht32f52341
+    - name: ht32f52342
+    - name: ht32f52352

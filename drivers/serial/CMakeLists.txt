@@ -131,3 +131,5 @@ if(CONFIG_UART_NATIVE_TTY)
   zephyr_library_sources(uart_native_tty.c)
   target_sources(native_simulator INTERFACE uart_native_tty_bottom.c)
 endif()
+
+add_subdirectory_ifdef(CONFIG_UART_HT32 holtek)

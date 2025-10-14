@@ -1,0 +1,15 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_FAMILY_HOLTEK_HT32
+	bool
+
+if SOC_FAMILY_HOLTEK_HT32
+
+config SOC_FAMILY
+	string
+	default "holtek_ht32"
+
+source "soc/holtek/ht32/*/Kconfig.soc"
+
+endif # SOC_FAMILY_HOLTEK_HT32

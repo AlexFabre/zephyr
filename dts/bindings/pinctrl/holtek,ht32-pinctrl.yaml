@@ -1,0 +1,16 @@
+# Copyright (c) 2025 Alex Fabre <alex.fabre@rtone.fr>
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Holtek HT32 pin controller
+
+  The Holtek HT32 pin controller uses the AFIO (Alternate Function I/O)
+  to configure pins for peripheral functions or as GPIO.
+
+compatible: "holtek,ht32-afio"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
