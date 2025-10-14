@@ -18,26 +18,26 @@ common:
       - ".*THINKING.*"
       - ".*EATING.*"
 tests:
-  sample.kernel.philosopher: {}
-  sample.kernel.philosopher.same_prio:
+  sample.philosopher: {}
+  sample.philosopher.same_prio:
     extra_args: SAME_PRIO=1
-  sample.kernel.philosopher.static:
+  sample.philosopher.static:
     extra_args: STATIC_OBJS=1
-  sample.kernel.philosopher.semaphores:
+  sample.philosopher.semaphores:
     extra_args: FORKS=SEMAPHORES
-  sample.kernel.philosopher.stacks:
+  sample.philosopher.stacks:
     extra_args: FORKS=STACKS
-  sample.kernel.philosopher.fifos:
+  sample.philosopher.fifos:
     extra_args: FORKS=FIFOS
-  sample.kernel.philosopher.lifos:
+  sample.philosopher.lifos:
     extra_args: FORKS=LIFOS
-  sample.kernel.philosopher.preempt_only:
+  sample.philosopher.preempt_only:
     extra_configs:
       - CONFIG_NUM_PREEMPT_PRIORITIES=6
       - CONFIG_NUM_COOP_PRIORITIES=0
       - CONFIG_BT=n
       - CONFIG_NETWORKING=n
-  sample.kernel.philosopher.coop_only:
+  sample.philosopher.coop_only:
     extra_configs:
       - CONFIG_NUM_PREEMPT_PRIORITIES=0
       - CONFIG_NUM_COOP_PRIORITIES=7
