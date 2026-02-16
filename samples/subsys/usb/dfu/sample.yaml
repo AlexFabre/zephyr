@@ -28,3 +28,11 @@ tests:
     tags: usb
     extra_configs:
       - CONFIG_APP_USB_DFU_USE_FLASH_BACKEND=y
+  sample.usbd.dfu-auth:
+    platform_allow:
+      - nrf52840dk/nrf52840
+    tags: usb
+    extra_args:
+      - EXTRA_DTC_OVERLAY_FILE="cdc_acm.overlay"
+    extra_configs:
+      - CONFIG_APP_USB_DFU_AUTH=y

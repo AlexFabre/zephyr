@@ -49,6 +49,30 @@ Use the following command to download the ``ramdisk0`` image to the device:
 
    dfu-util --alt 0 --download ramdisk0_backup.bin
 
+Building with authentication enabled
+*************************************
+
+When :kconfig:option:`CONFIG_APP_USB_DFU_AUTH` is enabled, the device exposes a
+USB CDC ACM serial port and requires the user to type ``auth <secret>`` before
+DFU mode is allowed. The default secret is ``zephyr``.
+
+.. zephyr-app-commands::
+   :zephyr-app: samples/subsys/usb/dfu
+   :board: nrf52840dk/nrf52840
+   :goals: build flash
+   :gen-args: -DEXTRA_DTC_OVERLAY_FILE="cdc_acm.overlay" -DCONFIG_APP_USB_DFU_AUTH=y
+   :compact:
+
+After flashing, connect a serial terminal to the CDC ACM port and authenticate:
+
+.. code-block:: console
+
+   DFU Auth> auth zephyr
+   OK, entering DFU mode
+
+The device then switches to DFU mode. After DFU completes (or a 5 minute
+timeout), the device returns to the authentication prompt.
+
 Building with flash backend enabled
 ***********************************
 

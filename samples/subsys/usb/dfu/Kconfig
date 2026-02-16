@@ -26,6 +26,22 @@ config USBD_DFU_FLASH_SLOT1
 
 endif
 
+config APP_USB_DFU_AUTH
+	bool "Require authentication before DFU mode"
+	select SERIAL
+	select UART_LINE_CTRL
+	select USBD_CDC_ACM_CLASS
+	help
+	  When enabled, the device exposes a USB CDC ACM serial port and requires
+	  the user to authenticate before DFU mode is allowed.
+
+config APP_USB_DFU_AUTH_SECRET
+	string "DFU authentication secret"
+	default "zephyr"
+	depends on APP_USB_DFU_AUTH
+	help
+	  The secret string for the auth command: auth <secret>
+
 endmenu
 
 # Source common USB sample options used to initialize new experimental USB
