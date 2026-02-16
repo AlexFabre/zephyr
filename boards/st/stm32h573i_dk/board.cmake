@@ -25,6 +25,7 @@ board_runner_args(probe_rs "--chip=STM32H573II")
 board_runner_args(openocd "--tcl-port=6666")
 board_runner_args(openocd --cmd-pre-init "gdb_report_data_abort enable")
 board_runner_args(openocd "--no-halt")
+board_runner_args(jlink "--device=STM32H573II" "--speed=4000")
 
 board_runner_args(stlink_gdbserver "--apid=1")
 board_runner_args(stlink_gdbserver "--extload=MX25LM51245G_STM32H573I-DK.stldr")
@@ -35,4 +36,5 @@ include(${ZEPHYR_BASE}/boards/common/pyocd.board.cmake)
 include(${ZEPHYR_BASE}/boards/common/probe-rs.board.cmake)
 include(${ZEPHYR_BASE}/boards/common/openocd-stm32.board.cmake)
 include(${ZEPHYR_BASE}/boards/common/stlink_gdbserver.board.cmake)
+include(${ZEPHYR_BASE}/boards/common/jlink.board.cmake)
 # FIXME: official openocd runner not yet available.
