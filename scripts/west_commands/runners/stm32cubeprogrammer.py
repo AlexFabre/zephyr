@@ -135,7 +135,7 @@ class STM32CubeProgrammerBinaryRunner(ZephyrBinaryRunner):
                 / "STM32CubeProgrammer"
                 / "STM32CubeProgrammer.app"
                 / "Contents"
-                / "MacOs"
+                / "Resources"
                 / "bin"
                 / "STM32_Programmer_CLI"
             )
