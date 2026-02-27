@@ -1,0 +1,29 @@
+# STM32 UART System Bootloader Driver
+
+# Copyright (c) 2025 Contributors to the Zephyr Project
+# SPDX-License-Identifier: Apache-2.0
+
+config STM32_BOOTLOADER_UART
+	bool "STM32 UART system bootloader driver"
+	default y
+	depends on STM32_BOOTLOADER
+	depends on DT_HAS_ST_STM32_BOOTLOADER_UART_ENABLED
+	depends on SERIAL
+	help
+	  Enable driver for programming a target STM32 MCU via its built-in
+	  USART system bootloader (AN3155 protocol). The host controls NRST,
+	  BOOT0 and optionally BOOT1 via GPIO, and communicates over UART.
+
+if STM32_BOOTLOADER_UART
+
+config STM32_BOOTLOADER_UART_INIT_PRIORITY
+	int "Init priority"
+	default 90
+	help
+	  Device driver initialization priority. Must be after GPIO and UART.
+
+module = STM32_BOOTLOADER_UART
+module-str = stm32_bootloader_uart
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # STM32_BOOTLOADER_UART

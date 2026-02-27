@@ -1,0 +1,11 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&usart3 {
+	stm32_target: stm32-bootloader-uart {
+		compatible = "st,stm32-bootloader-uart";
+		boot0-gpios = <&gpiog 8 GPIO_ACTIVE_HIGH>;
+		nrst-gpios  = <&gpiog 5 GPIO_ACTIVE_LOW>;
+	};
+};

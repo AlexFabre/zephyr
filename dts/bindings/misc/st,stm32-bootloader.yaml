@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Contributors to the Zephyr Project
+
+description: |
+  Common properties for STM32 system bootloader interfaces.
+
+  Shared by all transport-specific bindings (USART, I2C, CAN, etc.).
+  The host controls the target's BOOT0 (and optionally BOOT1) pin and
+  NRST via GPIO.
+
+properties:
+  boot0-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      GPIO connected to the target STM32 BOOT0 (or BOOT) pin.
+      Refer to AN2606 to check the BOOT0 pin logical level 
+      and option bytes value requirements for your specific STM32.
+
+  boot1-gpios:
+    type: phandle-array
+    description: |
+      GPIO connected to the target STM32 BOOT1 pin.
+      Not all STM32 have a BOOT1 pin.
+      Refer to AN2606 to check the BOOT1 pin logical level
+      and option bytes value requirements for your specific STM32.
+
+  nrst-gpios:
+    type: phandle-array
+    required: true
+    description: GPIO connected to the target STM32 NRST (reset) pin.
+
+  reset-pulse-ms:
+    type: int
+    default: 1
+    description: NRST pulse duration in milliseconds.
+
+  boot-delay-ms:
+    type: int
+    default: 10
+    description: |
+      After device reset, the host must wait until the STM32 bootloader is
+      ready to start detection phase with a specific interface communication.
+      This time corresponds to bootloader startup timing, during which
+      resources used by bootloader are initialized.
+
+      Depending on the bootloader model, the startup timing calculation
+      differs from one product to another. Refer to AN2606 for more details.
+  
+  erase-timeout-ms:
+    type: int
+    default: 35000
+    description: |
+      Timeout in milliseconds for mass erase operations.
+      Mass erase on some STM32 devices can take 30+ seconds.

@@ -1,0 +1,14 @@
+sample:
+  name: STM32 Bootloader UART
+  description: |
+    Demonstrates programming a target STM32 via its UART system bootloader
+    using the AN3155 protocol.
+tests:
+  sample.drivers.stm32_bootloader_uart:
+    tags:
+      - drivers
+      - misc
+    depends_on:
+      - gpio
+      - serial
+    filter: dt_compat_enabled("st,stm32-bootloader-uart")

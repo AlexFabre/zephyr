@@ -1,0 +1,42 @@
+# STM32 System Bootloader Driver
+
+# Copyright (c) 2026 Alex Fabre
+# SPDX-License-Identifier: Apache-2.0
+
+config STM32_BOOTLOADER
+    bool "STM32 system bootloader driver"
+    default y
+    depends on \
+      DT_HAS_ST_STM32_BOOTLOADER_UART_ENABLED || \
+      DT_HAS_ST_STM32_BOOTLOADER_CAN_ENABLED || \
+      DT_HAS_ST_STM32_BOOTLOADER_USB_ENABLED || \
+      DT_HAS_ST_STM32_BOOTLOADER_I2C_ENABLED || \
+      DT_HAS_ST_STM32_BOOTLOADER_I3C_ENABLED || \
+      DT_HAS_ST_STM32_BOOTLOADER_SPI_ENABLED || \
+      DT_HAS_ST_STM32_BOOTLOADER_FDCAN_ENABLED
+    depends on GPIO
+    help
+      STM32 devices have an internal bootloader stored in their internal boot
+      ROM. This driver aims to let users interact with the system bootloader
+      of a target stm32 device following AN2606 protocol.
+      
+      STM32 system bootloader communication is available through various serial
+      peripherals (such as USART, CAN, USB, I2C, I3C, SPI, FDCAN) depending on
+      the STM32 reference.
+
+if STM32_BOOTLOADER
+
+config STM32_BOOTLOADER_WRITE_CHUNK_SIZE
+	int "Write chunk size"
+	default 256
+	range 1 256
+	help
+	  Maximum number of bytes to send per Write Memory command.
+
+module = STM32_BOOTLOADER
+module-str = stm32_bootloader
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # STM32_BOOTLOADER
+
+rsource "usart/Kconfig"

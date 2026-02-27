@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Contributors to the Zephyr Project
+
+description: |
+  STM32 UART System Bootloader interface.
+
+  Allows a host MCU to program a target STM32 via its built-in USART system
+  bootloader (ST AN3155 protocol). The host controls the target's BOOT0
+  (and BOOT1 for some refs) pin and NRST via GPIO, can optionally read the
+  firmware to push from a given flash partition, and pushes it over UART.
+
+compatible: "st,stm32-bootloader-uart"
+
+include: [uart-device.yaml, "st,stm32-bootloader.yaml"]
+
+properties:
+  timeout-ms:
+    type: int
+    default: 100
+    description: Command response timeout in milliseconds.
+  
+  baudrate:
+    type: int
+    default: 115200
+    description: |
+      The STM32 bootloader auto-detects the host baudrate between a minimum
+      of 1200 up to a maximum of 115200.
+
+  parity-none:
+    type: boolean
+    description: |
+      Set this flag is the target STM32 requires UART with no parity.
+
+      On STM32 the UART bootloader peripheral is configured with even parity.
+      The STM32WB0 series and STM32WL3x line, are the only exception having their
+      UART bootloader peripheral configured with no parity.
