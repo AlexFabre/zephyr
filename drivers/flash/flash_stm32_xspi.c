@@ -1991,24 +1991,36 @@ static int stm32_xspi_enable_qe(const struct device *dev)
 
 /*
  * A device supporting both 3-byte and 4-byte addressing is driven with
- * 4-byte addresses when 4-byte opcodes are requested or when 3-byte
- * addresses cannot reach the whole memory.
+ * 4-byte addresses in octal mode, where OPI commands always carry a 32-bit
+ * address, when 4-byte opcodes are requested or when 3-byte addresses
+ * cannot reach the whole memory.
  */
 static inline bool xspi_use_4byte_addr(const struct flash_stm32_xspi_config *dev_cfg)
 {
-	return dev_cfg->four_byte_opcodes || (dev_cfg->flash_size > BIT(24));
+	return (dev_cfg->data_mode == XSPI_OCTO_MODE) || dev_cfg->four_byte_opcodes ||
+	       (dev_cfg->flash_size > BIT(24));
 }
 
 static void spi_nor_process_bfp_addrbytes(const struct device *dev,
 					  const uint8_t jesd216_bfp_addrbytes)
 {
+	const struct flash_stm32_xspi_config *dev_cfg = dev->config;
 	struct flash_stm32_xspi_data *data = dev->data;
 
-	if ((jesd216_bfp_addrbytes == JESD216_SFDP_BFP_DW1_ADDRBYTES_VAL_4B) ||
-	    (jesd216_bfp_addrbytes == JESD216_SFDP_BFP_DW1_ADDRBYTES_VAL_3B4B)) {
+	switch (jesd216_bfp_addrbytes) {
+	case JESD216_SFDP_BFP_DW1_ADDRBYTES_VAL_4B:
 		data->address_width = 4U;
-	} else {
+		break;
+	case JESD216_SFDP_BFP_DW1_ADDRBYTES_VAL_3B4B:
+		if (xspi_use_4byte_addr(dev_cfg)) {
+			data->address_width = 4U;
+		} else {
+			data->address_width = 3U;
+		}
+		break;
+	default:
 		data->address_width = 3U;
+		break;
 	}
 }
 
