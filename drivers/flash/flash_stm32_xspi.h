@@ -95,6 +95,8 @@ struct flash_stm32_xspi_data {
 	uint16_t page_size;
 	/* Address width in bytes */
 	uint8_t address_width;
+	/* Read and program use the 4-byte address opcodes (SPI, dual and quad modes) */
+	bool use_4b_opcodes;
 	/* Read operation dummy cycles */
 	uint8_t read_dummy;
 	uint32_t read_opcode;

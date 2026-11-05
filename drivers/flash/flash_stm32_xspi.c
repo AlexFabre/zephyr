@@ -58,6 +58,7 @@
 #include <zephyr/dt-bindings/flash_controller/xspi.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/irq.h>
+#include <zephyr/sys/byteorder.h>
 
 #include "spi_nor.h"
 #include "jesd216.h"
@@ -1244,7 +1245,7 @@ static int flash_stm32_xspi_erase(const struct device *dev, off_t addr,
 				const struct jesd216_erase_type *etp =
 							&erase_types[ei];
 
-				if ((etp->exp != 0)
+				if ((etp->exp != 0) && (etp->cmd != 0)
 				    && SPI_NOR_IS_ALIGNED(addr, etp->exp)
 				    && (size >= BIT(etp->exp))
 				    && ((bet == NULL)
@@ -2001,19 +2002,41 @@ static inline bool xspi_use_4byte_addr(const struct flash_stm32_xspi_config *dev
 	       (dev_cfg->flash_size > BIT(24));
 }
 
-static void spi_nor_process_bfp_addrbytes(const struct device *dev,
-					  const uint8_t jesd216_bfp_addrbytes)
+/* BFP DW16 Enter 4-Byte Addressing: dedicated 4-byte address instruction set */
+#define XSPI_BFP_DW16_ENTER_4BA_4B_OPCODES BIT(5)
+
+static int spi_nor_process_bfp_addrbytes(const struct device *dev,
+					 const struct jesd216_param_header *php,
+					 const struct jesd216_bfp *bfp)
 {
 	const struct flash_stm32_xspi_config *dev_cfg = dev->config;
 	struct flash_stm32_xspi_data *data = dev->data;
+	struct jesd216_bfp_dw16 dw16;
 
-	switch (jesd216_bfp_addrbytes) {
+	data->use_4b_opcodes = dev_cfg->four_byte_opcodes;
+
+	switch (jesd216_bfp_addrbytes(bfp)) {
 	case JESD216_SFDP_BFP_DW1_ADDRBYTES_VAL_4B:
 		data->address_width = 4U;
 		break;
 	case JESD216_SFDP_BFP_DW1_ADDRBYTES_VAL_3B4B:
-		if (xspi_use_4byte_addr(dev_cfg)) {
+		if (dev_cfg->data_mode == XSPI_OCTO_MODE) {
+			/* OPI commands always carry a 32-bit address */
 			data->address_width = 4U;
+		} else if (xspi_use_4byte_addr(dev_cfg)) {
+			/*
+			 * The device is never switched to 4-byte address mode and stays
+			 * in its default 3-byte mode: 32-bit addresses need 4-byte opcodes.
+			 * Unless four-byte-opcodes is set, the device must report them.
+			 */
+			if (!dev_cfg->four_byte_opcodes &&
+			    ((jesd216_bfp_decode_dw16(php, bfp, &dw16) != 0) ||
+			     ((dw16.enter_4ba & XSPI_BFP_DW16_ENTER_4BA_4B_OPCODES) == 0U))) {
+				LOG_ERR("4-byte address opcodes not reported by SFDP");
+				return -ENOTSUP;
+			}
+			data->address_width = 4U;
+			data->use_4b_opcodes = true;
 		} else {
 			data->address_width = 3U;
 		}
@@ -2022,6 +2045,8 @@ static void spi_nor_process_bfp_addrbytes(const struct device *dev,
 		data->address_width = 3U;
 		break;
 	}
+
+	return 0;
 }
 
 static inline uint8_t spi_nor_convert_read_to_4b(const uint8_t opcode)
@@ -2052,23 +2077,126 @@ static inline uint8_t spi_nor_convert_write_to_4b(const uint8_t opcode)
 		return SPI_NOR_CMD_PP_1_1_4_4B;
 	case SPI_NOR_CMD_PP_1_4_4:
 		return SPI_NOR_CMD_PP_1_4_4_4B;
+	case SPI_NOR_CMD_PP_1_1_2:
+		/* No 4-byte address dual page program opcode */
+		return SPI_NOR_CMD_PP_4B;
 	default:
 		/* use provided */
 		return opcode;
 	}
 }
 
+/* Returns 0 when the erase opcode has no known 4-byte address form */
+static inline uint8_t spi_nor_convert_erase_to_4b(const uint8_t opcode)
+{
+	switch (opcode) {
+	case SPI_NOR_CMD_SE:
+		return SPI_NOR_CMD_SE_4B;
+	case SPI_NOR_CMD_BE_32K:
+		return SPI_NOR_CMD_BE_32K_4B;
+	case SPI_NOR_CMD_BE:
+		return SPI_NOR_CMD_BE_4B;
+	default:
+		return 0U;
+	}
+}
+
+/*
+ * Check the 4-byte read and program opcodes against DW1 of the SFDP 4-byte
+ * address instruction table and fall back to supported ones.
+ */
+static int xspi_check_4b_opcodes(const struct device *dev, uint32_t dw1)
+{
+	struct flash_stm32_xspi_data *data = dev->data;
+	uint32_t sup;
+
+	switch (data->read_opcode) {
+	case SPI_NOR_CMD_READ_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_1S_1S_READ_13_SUP;
+		break;
+	case SPI_NOR_CMD_DREAD_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_1S_2_FAST_READ_3C_SUP;
+		break;
+	case SPI_NOR_CMD_2READ_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_2S_2S_FAST_READ_BC_SUP;
+		break;
+	case SPI_NOR_CMD_QREAD_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_1S_4S_FAST_READ_6C_SUP;
+		break;
+	case SPI_NOR_CMD_4READ_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_4S_4_FAST_READ_EC_SUP;
+		break;
+	default:
+		sup = 0U;
+		break;
+	}
+
+	if ((dw1 & sup) == 0U) {
+		if ((dw1 & JESD216_SFDP_4B_ADDR_DW1_1S_1S_1S_READ_13_SUP) == 0U) {
+			LOG_ERR("4-byte read opcode 0x%x not supported", data->read_opcode);
+			return -ENOTSUP;
+		}
+		LOG_WRN("4-byte read opcode 0x%x not supported, using 0x%x", data->read_opcode,
+			SPI_NOR_CMD_READ_4B);
+		data->read_mode = JESD216_MODE_111;
+		data->read_opcode = SPI_NOR_CMD_READ_4B;
+		data->read_dummy = 0U;
+	}
+
+	if ((data->write_opcode == SPI_NOR_CMD_PP_1_4_4_4B) &&
+	    ((dw1 & JESD216_SFDP_4B_ADDR_DW1_1S_4S_4S_PP_3E_SUP) == 0U) &&
+	    ((dw1 & JESD216_SFDP_4B_ADDR_DW1_1S_1S_4S_PP_34_SUP) != 0U)) {
+		LOG_WRN("4-byte program opcode 0x%x not supported, using 0x%x", data->write_opcode,
+			SPI_NOR_CMD_PP_1_1_4_4B);
+		data->write_opcode = SPI_NOR_CMD_PP_1_1_4_4B;
+	}
+
+	switch (data->write_opcode) {
+	case SPI_NOR_CMD_PP_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_1S_1S_PP_12_SUP;
+		break;
+	case SPI_NOR_CMD_PP_1_1_4_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_1S_4S_PP_34_SUP;
+		break;
+	case SPI_NOR_CMD_PP_1_4_4_4B:
+		sup = JESD216_SFDP_4B_ADDR_DW1_1S_4S_4S_PP_3E_SUP;
+		break;
+	default:
+		sup = 0U;
+		break;
+	}
+
+	if ((dw1 & sup) == 0U) {
+		if ((dw1 & JESD216_SFDP_4B_ADDR_DW1_1S_1S_1S_PP_12_SUP) == 0U) {
+			LOG_ERR("4-byte program opcode 0x%x not supported", data->write_opcode);
+			return -ENOTSUP;
+		}
+		LOG_WRN("4-byte program opcode 0x%x not supported, using 0x%x", data->write_opcode,
+			SPI_NOR_CMD_PP_4B);
+		data->write_opcode = SPI_NOR_CMD_PP_4B;
+	}
+
+	return 0;
+}
+
 static uint32_t xspi_default_write_opcode(uint8_t data_mode, bool four_byte_opcodes)
 {
-	switch (data_mode) {
-	case XSPI_OCTO_MODE:
+	if (data_mode == XSPI_OCTO_MODE) {
 		return SPI_NOR_OCMD_PAGE_PRG;
+	}
+
+	if (four_byte_opcodes) {
+		/* Without SFDP, only the 1-1-1 4-byte program opcode is assumed */
+		return SPI_NOR_CMD_PP_4B;
+	}
+
+	switch (data_mode) {
 	case XSPI_QUAD_MODE:
 		return SPI_NOR_CMD_PP_1_4_4;
 	case XSPI_DUAL_MODE:
 		return SPI_NOR_CMD_PP_1_1_2;
 	default:
-		return four_byte_opcodes ? SPI_NOR_CMD_PP_4B : SPI_NOR_CMD_PP;
+		return SPI_NOR_CMD_PP;
 	}
 }
 
@@ -2088,6 +2216,7 @@ static int spi_nor_process_bfp(const struct device *dev,
 	const size_t flash_size = jesd216_bfp_density(bfp) / 8U;
 	struct jesd216_instr read_instr = { 0 };
 	struct jesd216_bfp_dw15 dw15;
+	int ret;
 
 	if (flash_size != dev_cfg->flash_size) {
 		LOG_DBG("Unexpected flash size: %u", flash_size);
@@ -2107,7 +2236,10 @@ static int spi_nor_process_bfp(const struct device *dev,
 		++etp;
 	}
 
-	spi_nor_process_bfp_addrbytes(dev, jesd216_bfp_addrbytes(bfp));
+	ret = spi_nor_process_bfp_addrbytes(dev, php, bfp);
+	if (ret != 0) {
+		return ret;
+	}
 	LOG_DBG("Address width: %u Bytes", data->address_width);
 
 	/* use PP opcode based on configured data mode if nothing is set in DTS */
@@ -2146,13 +2278,18 @@ static int spi_nor_process_bfp(const struct device *dev,
 		}
 
 		/* convert 3-Byte opcodes to 4-Byte (if required) */
-		if (dev_cfg->four_byte_opcodes) {
+		if (data->use_4b_opcodes) {
 			if (data->address_width != 4U) {
 				LOG_DBG("4-Byte opcodes require 4-Byte address width");
 				return -ENOTSUP;
 			}
 			data->read_opcode = spi_nor_convert_read_to_4b(data->read_opcode);
 			data->write_opcode = spi_nor_convert_write_to_4b(data->write_opcode);
+			/* The 4-byte address instruction table, if any, overrides these */
+			for (idx = 0U; idx < ARRAY_SIZE(data->erase_types); ++idx) {
+				data->erase_types[idx].cmd =
+					spi_nor_convert_erase_to_4b(data->erase_types[idx].cmd);
+			}
 		}
 
 		/* enable quad mode (if required) */
@@ -2313,10 +2450,11 @@ static int flash_stm32_xspi_init(const struct device *dev)
 			} else if (dev_data->address_width == 0U) {
 				dev_data->address_width = 3U;
 			}
+			dev_data->use_4b_opcodes = (dev_data->address_width == 4U);
 
 			if (dev_data->write_opcode == SPI_NOR_WRITEOC_NONE) {
 				dev_data->write_opcode = xspi_default_write_opcode(
-					dev_cfg->data_mode, dev_cfg->four_byte_opcodes);
+					dev_cfg->data_mode, dev_data->use_4b_opcodes);
 			}
 
 #if defined(CONFIG_FLASH_PAGE_LAYOUT)
@@ -2594,9 +2732,21 @@ static int flash_stm32_xspi_init(const struct device *dev)
 						etp->cmd = cmd;
 					};
 				}
+
+				if ((dev_cfg->data_mode != XSPI_OCTO_MODE) &&
+				    dev_data->use_4b_opcodes) {
+					ret = xspi_check_4b_opcodes(dev, sys_le32_to_cpu(u2.dw[0]));
+					if (ret != 0) {
+						break;
+					}
+				}
 			}
 		}
 		++php;
+	}
+
+	if (ret != 0) {
+		return ret;
 	}
 
 #if defined(CONFIG_FLASH_PAGE_LAYOUT)
