@@ -1997,6 +1997,16 @@ static int stm32_xspi_enable_qe(const struct device *dev)
 	return ret;
 }
 
+/*
+ * A device supporting both 3-byte and 4-byte addressing is driven with
+ * 4-byte addresses when 4-byte opcodes are requested or when 3-byte
+ * addresses cannot reach the whole memory.
+ */
+static inline bool xspi_use_4byte_addr(const struct flash_stm32_xspi_config *dev_cfg)
+{
+	return dev_cfg->four_byte_opcodes || (dev_cfg->flash_size > BIT(24));
+}
+
 static void spi_nor_process_bfp_addrbytes(const struct device *dev,
 					  const uint8_t jesd216_bfp_addrbytes)
 {
@@ -2294,7 +2304,7 @@ static int flash_stm32_xspi_init(const struct device *dev)
 			/* Full init is bypassed when already in XIP ext-flash mode,
 			 * so set required runtime defaults here.
 			 */
-			if ((dev_cfg->four_byte_opcodes) || (dev_cfg->flash_size > BIT(24))) {
+			if (xspi_use_4byte_addr(dev_cfg)) {
 				dev_data->address_width = 4U;
 			} else if (dev_data->address_width == 0U) {
 				dev_data->address_width = 3U;
