@@ -2644,9 +2644,9 @@ static int flash_stm32_xspi_init(const struct device *dev)
 	}
 
 	/* Send the instruction to read the SFDP  */
-	const uint8_t decl_nph = 2;
+	/* The 4-byte address instruction table can follow vendor tables */
+	const uint8_t decl_nph = 8;
 	union {
-		/* We only process BFP so use one parameter block */
 		uint8_t raw[JESD216_SFDP_SIZE(decl_nph)];
 		struct jesd216_sfdp_header sfdp;
 	} u;
@@ -2679,7 +2679,8 @@ static int flash_stm32_xspi_init(const struct device *dev)
 			(php - hp->phdr), id, php->rev_major, php->rev_minor,
 			php->len_dw, jesd216_param_addr(php));
 
-		if (id == JESD216_SFDP_PARAM_ID_BFP) {
+		/* The first parameter header is the BFP one */
+		if ((id == JESD216_SFDP_PARAM_ID_BFP) && (php == hp->phdr)) {
 			union {
 				uint32_t dw[20];
 				struct jesd216_bfp bfp;
@@ -2700,7 +2701,9 @@ static int flash_stm32_xspi_init(const struct device *dev)
 		}
 		if (id == JESD216_SFDP_PARAM_ID_4B_ADDR_INSTR) {
 
-			if (dev_data->address_width == 4U) {
+			/* Octal mode uses its own opcodes */
+			if ((dev_cfg->data_mode != XSPI_OCTO_MODE) &&
+			    (dev_data->address_width == 4U)) {
 				/*
 				 * Check table 4 byte address instruction table to get supported
 				 * erase opcodes when running in 4 byte address mode
@@ -2730,8 +2733,7 @@ static int flash_stm32_xspi_init(const struct device *dev)
 					};
 				}
 
-				if ((dev_cfg->data_mode != XSPI_OCTO_MODE) &&
-				    dev_data->use_4b_opcodes) {
+				if (dev_data->use_4b_opcodes) {
 					ret = xspi_check_4b_opcodes(dev, sys_le32_to_cpu(u2.dw[0]));
 					if (ret != 0) {
 						break;
