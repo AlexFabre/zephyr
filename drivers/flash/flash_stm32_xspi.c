@@ -963,15 +963,7 @@ static int stm32_xspi_set_memorymap(struct flash_stm32_xspi_data *dev_data,
 	stm32_xspi_bzero(&s_command, sizeof(s_command));
 	stm32_xspi_bzero(&s_MemMappedCfg, sizeof(s_MemMappedCfg));
 
-	/* Configure octoflash in MemoryMapped mode */
-	if ((data_mode == XSPI_SPI_MODE) &&
-		(stm32_xspi_hal_address_size(dev_data) == HAL_XSPI_ADDRESS_24_BITS)) {
-		/* OPI mode and 3-bytes address size not supported by memory */
-		XSPI_LOG_ERR("XSPI_SPI_MODE in 3Bytes addressing is not supported");
-		return -EIO;
-	}
-
-	/* Initialize the read command */
+	/* Configure octoflash in MemoryMapped mode: initialize the read command */
 	s_command.OperationType = HAL_XSPI_OPTYPE_READ_CFG;
 	s_command.InstructionMode = (data_rate == XSPI_STR_TRANSFER)
 				? ((data_mode == XSPI_SPI_MODE)
